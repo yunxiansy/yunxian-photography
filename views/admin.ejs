@@ -1,0 +1,97 @@
+<%- include('partials/header', { title: '管理后台' }) %>
+
+<h1 class="page-title">管理后台</h1>
+<p class="muted">欢迎回来，<%= currentUser.username %>。这里可以发布作品、管理留言和用户。</p>
+
+<section class="admin-section">
+  <h2>发布新作品</h2>
+  <form action="/admin/photos" method="post" enctype="multipart/form-data" class="upload-form">
+    <label>图片（JPG / PNG / WebP / GIF，≤10MB）<input type="file" name="image" accept="image/*" required></label>
+    <label>标题<input type="text" name="title" maxlength="100" required></label>
+    <label>分类
+      <select name="category">
+        <% categories.forEach(function (c) { %><option value="<%= c %>"><%= c %></option><% }) %>
+      </select>
+    </label>
+    <label>作品说明<textarea name="description" rows="3" maxlength="1000"></textarea></label>
+    <button class="btn" type="submit">发布作品</button>
+  </form>
+</section>
+
+<section class="admin-section">
+  <h2>作品管理（<%= photos.length %>）</h2>
+  <table class="admin-table">
+    <thead><tr><th>作品</th><th>分类</th><th>发布日期</th><th>操作</th></tr></thead>
+    <tbody>
+      <% photos.forEach(function (p) { %>
+        <tr>
+          <td><a href="/photo/<%= p.id %>"><%= p.title %></a><% if (p.is_sample) { %> <span class="tag">示例</span><% } %></td>
+          <td><%= p.category %></td>
+          <td><%= p.created_at.slice(0, 10) %></td>
+          <td>
+            <details class="edit-box">
+              <summary>编辑</summary>
+              <form action="/admin/photos/<%= p.id %>/edit" method="post">
+                <input type="text" name="title" value="<%= p.title %>" required>
+                <select name="category">
+                  <% categories.forEach(function (c) { %><option value="<%= c %>" <%= c === p.category ? 'selected' : '' %>><%= c %></option><% }) %>
+                </select>
+                <textarea name="description" rows="2"><%= p.description %></textarea>
+                <button class="btn-small" type="submit">保存</button>
+              </form>
+            </details>
+            <form class="inline-form" action="/admin/photos/<%= p.id %>/delete" method="post" onsubmit="return confirm('确定删除《<%= p.title %>》吗？相关留言也会一并删除。')">
+              <button class="danger-btn" type="submit">删除</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</section>
+
+<section class="admin-section">
+  <h2>留言管理（最近 100 条）</h2>
+  <% if (comments.length === 0) { %><p class="empty">暂无留言。</p><% } %>
+  <ul class="comment-list">
+    <% comments.forEach(function (c) { %>
+      <li>
+        <p class="comment-head"><strong><%= c.username %></strong> 在《<a href="/photo/<%= c.photo_id %>"><%= c.photo_title %></a>》下留言 <span class="muted"><%= c.created_at %></span></p>
+        <p class="comment-body"><%= c.body %></p>
+        <form class="inline-form" action="/admin/comments/<%= c.id %>/delete" method="post" onsubmit="return confirm('确定删除这条留言吗？')">
+          <button class="danger-btn" type="submit">删除留言</button>
+        </form>
+      </li>
+    <% }) %>
+  </ul>
+</section>
+
+<section class="admin-section">
+  <h2>用户管理（<%= users.length %>）</h2>
+  <table class="admin-table">
+    <thead><tr><th>用户名</th><th>邮箱</th><th>身份</th><th>状态</th><th>注册日期</th><th>操作</th></tr></thead>
+    <tbody>
+      <% users.forEach(function (u) { %>
+        <tr>
+          <td><%= u.username %></td>
+          <td><%= u.email %></td>
+          <td><%= u.is_admin ? '管理员' : '普通用户' %></td>
+          <td><%= u.is_banned ? '已封禁' : '正常' %></td>
+          <td><%= u.created_at.slice(0, 10) %></td>
+          <td>
+            <% if (!u.is_admin) { %>
+              <form class="inline-form" action="/admin/users/<%= u.id %>/ban" method="post">
+                <button class="btn-small" type="submit"><%= u.is_banned ? '解封' : '封禁' %></button>
+              </form>
+              <form class="inline-form" action="/admin/users/<%= u.id %>/delete" method="post" onsubmit="return confirm('确定删除用户 <%= u.username %> 吗？他的留言也会一并删除。')">
+                <button class="danger-btn" type="submit">删除</button>
+              </form>
+            <% } else { %><span class="muted">—</span><% } %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</section>
+
+<%- include('partials/footer') %>

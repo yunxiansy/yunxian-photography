@@ -1,0 +1,39 @@
+<%- include('partials/header', { title: photo.title }) %>
+
+<article class="photo-detail">
+  <p class="back"><a href="/">← 返回作品墙</a></p>
+  <figure>
+    <img src="<%= photo.path.startsWith('/seed/') ? '/static' + photo.path : photo.path %>" alt="<%= photo.title %>">
+  </figure>
+  <div class="photo-info">
+    <h1><%= photo.title %></h1>
+    <p class="meta"><%= photo.category %> · 发布于 <%= photo.created_at %><% if (photo.is_sample) { %> · 示例照片，待替换<% } %></p>
+    <p class="desc"><%= photo.description %></p>
+  </div>
+
+  <section class="comments">
+    <h2>留言（<%= comments.length %>）</h2>
+    <% if (comments.length === 0) { %>
+      <p class="empty">还没有留言，来做第一个留言的人吧。</p>
+    <% } %>
+    <ul class="comment-list">
+      <% comments.forEach(function (c) { %>
+        <li>
+          <p class="comment-head"><strong><%= c.username %></strong> <span class="muted"><%= c.created_at %></span></p>
+          <p class="comment-body"><%= c.body %></p>
+        </li>
+      <% }) %>
+    </ul>
+
+    <% if (currentUser) { %>
+      <form class="comment-form" action="/photo/<%= photo.id %>/comments" method="post">
+        <textarea name="body" rows="3" maxlength="2000" placeholder="写下你对这张作品的想法…" required></textarea>
+        <button class="btn" type="submit">发表留言</button>
+      </form>
+    <% } else { %>
+      <p class="login-hint">登录后可以发表留言。<a href="/login">去登录</a> 或 <a href="/register">注册账号</a></p>
+    <% } %>
+  </section>
+</article>
+
+<%- include('partials/footer') %>
