@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>云闲摄影</title>
+<link rel="stylesheet" href="public/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="./">云闲<span>摄影</span></a>
+    <nav class="nav"><a href="#works">作品</a><a href="#about">关于</a></nav>
+  </div>
+</header>
+
+<main class="wrap" id="works">
+  <section class="hero">
+    <h1>云闲摄影</h1>
+    <p>闲云野鹤般地走，认真地看，慢慢地拍。</p>
+  </section>
+
+  <div class="filters" id="filters">
+    <button type="button" data-category="" class="active">全部</button>
+    <button type="button" data-category="风景">风景</button>
+    <button type="button" data-category="静物">静物</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <section id="about" class="about">
+    <h2>关于</h2>
+    <p>云闲摄影是我的个人摄影小站，只发风景与静物。这里现在放的是示例照片，慢慢会换成我自己的作品。</p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>云闲摄影</p>
+  <p class="muted">风景 · 静物</p>
+</footer>
+
+<div class="lightbox" id="lightbox" hidden>
+  <button type="button" class="lb-close" id="lbClose" aria-label="关闭">×</button>
+  <button type="button" class="lb-prev" id="lbPrev" aria-label="上一张">‹</button>
+  <figure>
+    <img id="lbImg" src="" alt="">
+    <figcaption><h2 id="lbTitle"></h2><p id="lbDesc"></p><p class="muted" id="lbMeta"></p></figcaption>
+  </figure>
+  <button type="button" class="lb-next" id="lbNext" aria-label="下一张">›</button>
+</div>
+
+<script src="photos.js"></script>
+<script>
+(function () {
+  var grid = document.getElementById('grid');
+  var current = '全部';
+  var shown = [];
+
+  function render() {
+    shown = PHOTOS.filter(function (p) { return current === '全部' || p.category === current; });
+    grid.innerHTML = '';
+    if (!shown.length) {
+      grid.innerHTML = '<p class="empty">这个分类下还没有作品。</p>';
+      return;
+    }
+    shown.forEach(function (p, i) {
+      var card = document.createElement('article');
+      card.className = 'card';
+      card.innerHTML = '<div class="thumb"><img src="' + p.src + '" alt="' + p.title + '" loading="lazy"></div>' +
+        '<div class="card-body"><h2>' + p.title + '</h2><p class="meta">' + p.category + ' · 示例</p></div>';
+      card.addEventListener('click', function () { openLb(i); });
+      grid.appendChild(card);
+    });
+  }
+
+  document.getElementById('filters').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-category]');
+    if (!btn) return;
+    current = btn.getAttribute('data-category') || '全部';
+    document.querySelectorAll('#filters button').forEach(function (b) { b.classList.toggle('active', b === btn); });
+    render();
+  });
+
+  var lb = document.getElementById('lightbox');
+  var idx = 0;
+  function show(i) {
+    idx = (i + shown.length) % shown.length;
+    var p = shown[idx];
+    var img = document.getElementById('lbImg');
+    img.src = p.src;
+    img.alt = p.title;
+    document.getElementById('lbTitle').textContent = p.title;
+    document.getElementById('lbDesc').textContent = p.desc;
+    document.getElementById('lbMeta').textContent = p.category + ' · 示例照片';
+  }
+  function openLb(i) { show(i); lb.hidden = false; document.body.style.overflow = 'hidden'; }
+  function closeLb() { lb.hidden = true; document.body.style.overflow = ''; }
+
+  document.getElementById('lbClose').addEventListener('click', closeLb);
+  document.getElementById('lbPrev').addEventListener('click', function (e) { e.stopPropagation(); show(idx - 1); });
+  document.getElementById('lbNext').addEventListener('click', function (e) { e.stopPropagation(); show(idx + 1); });
+  lb.addEventListener('click', function (e) { if (e.target === lb) closeLb(); });
+  document.addEventListener('keydown', function (e) {
+    if (lb.hidden) return;
+    if (e.key === 'Escape') closeLb();
+    if (e.key === 'ArrowLeft') show(idx - 1);
+    if (e.key === 'ArrowRight') show(idx + 1);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
