@@ -1,1 +1,0 @@
-{"dependencies":{"bcryptjs":"^2.4.3","ejs":"^3.1.10","express":"^4.21.2","express-session":"^1.18.1","multer":"^1.4.5-lts.1"},"description":"云闲摄影 — 个人摄影作品展示站，支持访客注册留言，管理员可发布和管理作品","license":"MIT","main":"server.js","name":"yunxian-photography","scripts":{"start":"node server.js"},"version":"1.0.0"}
